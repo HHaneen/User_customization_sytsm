@@ -1,93 +1,97 @@
 //get elements from DOM
+//first select for fonts
 let fonts = document.getElementById("fonts");
+//second select for color
 let colors = document.getElementById("colors");
+//third select for fontSize
 let fontSized = document.getElementById("fontSized");
+//the div where we will apply the user's selections
 let toy = document.getElementById("toy");
-//use set/remove attribute
-//use local storage
-//check local storage for font each element
-if (window.localStorage.getItem("fonts") != null) {
-  let values = JSON.parse(window.localStorage.getItem("fonts"));
-  // and apply it to new  value
-  let choosenOption = fonts.options[values.index];
-  choosenOption.setAttribute("selected", "");
-  //apply changes on the selected div
-  toy.style.fontFamily = values.value + ", sans-serif";
-} else {
-  //for default selected
-  fonts.options[0].setAttribute("selected", "");
-  toy.style.fontFamily = fonts.options[0].value + ", sans-serif";
+//constants for local storage variables
+const FONT_KEY = "fonts";
+const COLOR_KEY = "colors";
+const FONTSIZE_KEY = "fontSized";
+//function to get local storage data
+function getLocalStorageData(key) {
+  //get the item by key then convert it to object again
+  return JSON.parse(window.localStorage.getItem(key));
 }
-//local storage for color
-if (window.localStorage.getItem("colors") != null) {
-  let values = JSON.parse(window.localStorage.getItem("colors"));
-  // and apply it to new  value
-  let choosenOption = colors.options[values.index];
-  choosenOption.setAttribute("selected", "");
-  //apply changes on the selected div
-  toy.style.color = values.value;
-} else {
-  //for default selected
-  colors.options[0].setAttribute("selected", "");
-  toy.style.color = colors.options[0].value;
+//function to set data to local storage
+//take key name that will be written in local storage
+//the index of just selected element [while change event]
+//the value of selected option to apply it later [when we apply local storage settings]
+function setLocalSorageDate(key, i, v) {
+  //put our data in an object
+  const data = {
+    index: i,
+    value: v,
+  };
+  //set data in local storage
+  window.localStorage.setItem(key, JSON.stringify(data));
 }
-//local forage for fontSize
-if (window.localStorage.getItem("fontSized") != null) {
-  let values = JSON.parse(window.localStorage.getItem("fontSized"));
-  // and apply it to new  value
-  let choosenOption = fontSized.options[values.index];
-  choosenOption.setAttribute("selected", "");
-  //apply changes on the selected div
-  toy.style.fontSize = values.value + "px";
-} else {
-  //for default selected
-  fontSized.options[0].setAttribute("selected", "");
-  toy.style.color = fontSized.options[0].value + "px";
+//function to apply stored data settings
+//now after the user make refresh
+//we will check if there is local storag data -> so it will applied
+//else -> we will apply default data -> first value of first selection for all select tags
+//it takes :
+// the select tag
+// the key that we will check for in  local storage
+//the style that will applied and its value depend on [local storage data || default value]
+//unit -> some styles need units as you now
+function applyStoredDataSettings(
+  selectedELement,
+  key,
+  styleproperity,
+  unit = ""
+) {
+  //first we get data form local storage
+  // if it return null -> that means this key not exist in local storage
+  //else -> that mean there's data for this key and we will apply it
+  const data = getLocalStorageData(key);
+  if (data !== null) {
+    //add selected attribute
+    //select the element that the user had select before refresh
+    selectedELement.options[data.index].setAttribute("selected", "");
+    //apply style to our div
+    toy.style[styleproperity] = data.value + unit;
+  } else {
+    //set default by set select attribute for the first option in the select tag
+    selectedELement.options[0].setAttribute("selected", "");
+    // and apply it to our toy div
+    toy.style[styleproperity] = selectedELement.options[0].value + unit;
+  }
 }
+//use localStorage apply function for all selects feilds
+applyStoredDataSettings(fonts, FONT_KEY, "fontFamily", ", sans-serif");
+applyStoredDataSettings(colors, COLOR_KEY, "color", "");
+applyStoredDataSettings(fontSized, FONTSIZE_KEY, "fontSize", "px");
 
-// select font family
+//add events listener for fonts feild
 fonts.addEventListener("change", () => {
+  //apply new selected data for our div
   toy.style.fontFamily = fonts.value + ", sans-serif";
-  //delete selected form default
+  //delete selected form prevoius selected option
   document.querySelector("#fonts [selected]").removeAttribute("selected");
-  // and apply it to new  value
+  // and apply it to current selection
   let choosenOption = fonts.options[fonts.selectedIndex];
   choosenOption.setAttribute("selected", "");
   //save data in local storage
-  let fontData = {
-    index: fonts.selectedIndex,
-    value: fonts.value,
-  };
-  //add new updates to loacl storage
-  window.localStorage.setItem("fonts", JSON.stringify(fontData));
+  setLocalSorageDate(FONT_KEY, fonts.selectedIndex, fonts.value);
 });
-//select color
+//same steps for color
 colors.addEventListener("change", () => {
   toy.style.color = colors.value;
   document.querySelector("#colors [selected]").removeAttribute("selected");
   // and apply it to new  value
   let choosenOption = colors.options[colors.selectedIndex];
   choosenOption.setAttribute("selected", "");
-  //save data in local storage
-  let colorData = {
-    index: colors.selectedIndex,
-    value: colors.value,
-  };
-  //add new updates to loacl storage
-  window.localStorage.setItem("colors", JSON.stringify(colorData));
+  setLocalSorageDate(COLOR_KEY, colors.selectedIndex, colors.value);
 });
-//select fontSized
+//same steps for fontSize
 fontSized.addEventListener("change", () => {
   toy.style.fontSize = fontSized.value + "px";
   document.querySelector("#fontSized [selected]").removeAttribute("selected");
-  // and apply it to new  value
   let choosenOption = fontSized.options[fontSized.selectedIndex];
   choosenOption.setAttribute("selected", "");
-  //save data in local storage
-  let fontSizeDate = {
-    index: fontSized.selectedIndex,
-    value: fontSized.value,
-  };
-  //add new updates to loacl storage
-  window.localStorage.setItem("fontSized", JSON.stringify(fontSizeDate));
+  setLocalSorageDate(FONTSIZE_KEY, fontSized.selectedIndex, fontSized.value);
 });
